@@ -29,6 +29,8 @@
 #region Using Statements
 using System;
 using System.Diagnostics;
+using System.Globalization;
+
 #if NET6_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -3075,7 +3077,7 @@ namespace SDL2
 
 		/* renderer refers to an SDL_Renderer*, texture to an SDL_Texture* */
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-		public static extern int SDL_RenderCopyEx(
+		public static extern int SDL_RenderCopyExF(
 			IntPtr renderer,
 			IntPtr texture,
 			ref SDL_Rect srcrect,
@@ -3091,7 +3093,7 @@ namespace SDL2
 		 * This overload allows for IntPtr.Zero (null) to be passed for srcrect.
 		 */
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-		public static extern int SDL_RenderCopyEx(
+		public static extern int SDL_RenderCopyExF(
 			IntPtr renderer,
 			IntPtr texture,
 			IntPtr srcrect,
@@ -3443,8 +3445,33 @@ namespace SDL2
 			SDL_BlendMode blendMode
 		);
 
-		/* renderer refers to an SDL_Renderer* */
-		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+		/// <summary>
+		/// Sets the color used for drawing operations (Rect, Line and Clear).
+		/// </summary>
+		/// <param name="renderer">SDL_Renderer</param>
+		/// <param name="color">Target color</param>
+		/// <returns></returns>
+		public static int SDL_SetRenderDrawColor(IntPtr renderer, SDL_Color color)
+			=> SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+        /// <summary>
+        /// Sets the color used for drawing operations (Rect, Line and Clear).
+        /// </summary>
+        /// <param name="renderer">SDL_Renderer</param>
+        /// <param name="color">Target color</param>
+        /// <returns></returns>
+        public static int SDL_SetRenderDrawColor(IntPtr renderer, SDL_FColor color)
+            => SDL_SetRenderDrawColor(renderer, SDL_FColor.FloatToByte(color.r), SDL_FColor.FloatToByte(color.g), SDL_FColor.FloatToByte(color.b), SDL_FColor.FloatToByte(color.a));
+
+        /// <summary>
+        /// Sets the color used for drawing operations (Rect, Line and Clear).
+        /// </summary>
+        /// <param name="renderer">SDL_Renderer</param>
+        /// <param name="r">Red</param>
+        /// <param name="g">Green</param>
+        /// <param name="b">Blue</param>
+        /// <param name="a">Alpha</param>
+        /// <returns></returns>
+        [DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern int SDL_SetRenderDrawColor(
 			IntPtr renderer,
 			byte r,
@@ -4041,9 +4068,60 @@ namespace SDL2
 			public byte g;
 			public byte b;
 			public byte a;
-		}
 
-		[StructLayout(LayoutKind.Sequential)]
+			public SDL_Color(byte r, byte g, byte b, byte a)
+			{
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SDL_FColor
+        {
+            public float r;
+            public float g;
+            public float b;
+            public float a;
+
+            public SDL_FColor(float r, float g, float b, float a)
+            {
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.a = a;
+            }
+
+            public float sqrMagnitude => r * r + g * g + b * b + a * a;
+
+            public static SDL_FColor operator +(SDL_FColor a, SDL_FColor b) => new SDL_FColor(a.r + b.r, a.g + b.g, a.b + b.b, a.a + b.a);
+            public static SDL_FColor operator -(SDL_FColor a, SDL_FColor b) => new SDL_FColor(a.r - b.r, a.g - b.g, a.b - b.b, a.a - b.a);
+            public static SDL_FColor operator *(SDL_FColor a, SDL_FColor b) => new SDL_FColor(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a);
+            public static SDL_FColor operator /(SDL_FColor a, SDL_FColor b) => new SDL_FColor(a.r / b.r, a.g / b.g, a.b / b.b, a.a / b.a);
+            public static SDL_FColor operator -(SDL_FColor a) => new SDL_FColor(-a.r, -a.g, -a.b, -a.a);
+            public static SDL_FColor operator *(SDL_FColor a, float d) => new SDL_FColor(a.r * d, a.g * d, a.b * d, a.a * d);
+            public static SDL_FColor operator *(float d, SDL_FColor a) => new SDL_FColor(a.r * d, a.g * d, a.b * d, a.a * d);
+            public static SDL_FColor operator /(SDL_FColor a, float d) => new SDL_FColor(a.r / d, a.g / d, a.b / d, a.a / d);
+            public static bool operator ==(SDL_FColor lhs, SDL_FColor rhs) => (lhs - rhs).sqrMagnitude < 9.99999944E-11f;
+            public static bool operator !=(SDL_FColor lhs, SDL_FColor rhs) => !(lhs == rhs);
+
+            public override int GetHashCode() => r.GetHashCode() ^ g.GetHashCode() << 2 ^ b.GetHashCode() >> 2 ^ a.GetHashCode() >> 1;
+            public override bool Equals(object obj) => obj is SDL_FColor && Equals((SDL_FColor)obj);
+            public bool Equals(SDL_FColor other) => r.Equals(other.r) && g.Equals(other.g) && b.Equals(other.b) && a.Equals(other.a);
+
+            public static SDL_FColor Lerp(SDL_FColor a, SDL_FColor b, float t) => LerpUnclamped(a, b, t.Clamp(0f, 1f));
+            public static SDL_FColor LerpUnclamped(SDL_FColor a, SDL_FColor b, float t) => new SDL_FColor(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t);
+
+            public static implicit operator SDL_FColor(SDL_Color v) => new SDL_FColor(ByteToFloat(v.r), ByteToFloat(v.g), ByteToFloat(v.b), ByteToFloat(v.a));
+            public static implicit operator SDL_Color(SDL_FColor v) => new SDL_Color(FloatToByte(v.r), FloatToByte(v.g), FloatToByte(v.b), FloatToByte(v.a));
+
+			public static float ByteToFloat(float byteValue) => byteValue / 255;
+			public static byte FloatToByte(float floatValue) => (byte)(floatValue * 255);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
 		public struct SDL_Palette
 		{
 			public int ncolors;
@@ -4187,13 +4265,41 @@ namespace SDL2
 		#endregion
 
 		#region SDL_rect.h
-
 		[StructLayout(LayoutKind.Sequential)]
 		public struct SDL_Point
 		{
 			public int x;
 			public int y;
-		}
+
+            public SDL_Point(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
+
+            public float sqrMagnitude => x * x + y * y;
+
+            public static readonly SDL_Point zero = new SDL_Point(0, 0);
+            public static readonly SDL_Point one = new SDL_Point(1, 1);
+
+            public static SDL_Point operator +(SDL_Point a, SDL_Point b) => new SDL_Point(a.x + b.x, a.y + b.y);
+            public static SDL_Point operator -(SDL_Point a, SDL_Point b) => new SDL_Point(a.x - b.x, a.y - b.y);
+            public static SDL_Point operator *(SDL_Point a, SDL_Point b) => new SDL_Point(a.x * b.x, a.y * b.y);
+            public static SDL_Point operator /(SDL_Point a, SDL_Point b) => new SDL_Point(a.x / b.x, a.y / b.y);
+            public static SDL_Point operator -(SDL_Point a) => new SDL_Point(-a.x, -a.y);
+            public static SDL_Point operator *(SDL_Point a, int d) => new SDL_Point(a.x * d, a.y * d);
+            public static SDL_Point operator *(int d, SDL_Point a) => new SDL_Point(a.x * d, a.y * d);
+            public static SDL_Point operator /(SDL_Point a, int d) => new SDL_Point(a.x / d, a.y / d);
+            public static bool operator ==(SDL_Point lhs, SDL_Point rhs) => (lhs - rhs).sqrMagnitude < 9.99999944E-11f;
+            public static bool operator !=(SDL_Point lhs, SDL_Point rhs) => !(lhs == rhs);
+
+            public override int GetHashCode() => x.GetHashCode() ^ y.GetHashCode() << 2;
+            public override bool Equals(object obj) => obj is SDL_Point && Equals((SDL_Point)obj);
+            public bool Equals(SDL_Point other) => x.Equals(other.x) && y.Equals(other.y);
+
+            public static SDL_Point Lerp(SDL_Point a, SDL_Point b, float t) => LerpUnclamped(a, b, t.Clamp<float>(0f, 1f));
+            public static SDL_Point LerpUnclamped(SDL_Point a, SDL_Point b, float t) => new SDL_Point((a.x + (b.x - a.x) * t).AsInt(), (a.y + (b.y - a.y) * t).AsInt());
+        }
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct SDL_Rect
@@ -4202,7 +4308,18 @@ namespace SDL2
 			public int y;
 			public int w;
 			public int h;
-		}
+
+            public static readonly SDL_Rect Zero = new SDL_Rect(0, 0, 0, 0);
+			public static readonly SDL_Rect Normal = new SDL_Rect(0, 0, 1, 1);
+
+            public SDL_Rect(int x, int y, int w, int h)
+            {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+            }
+        }
 
 		/* Only available in 2.0.10 or higher. */
 		[StructLayout(LayoutKind.Sequential)]
@@ -4210,19 +4327,171 @@ namespace SDL2
 		{
 			public float x;
 			public float y;
-		}
+
+            public SDL_FPoint(float x, float y)
+            {
+                this.x = x;
+                this.y = y;
+            }
+
+            public float sqrMagnitude => x * x + y * y;
+
+            public SDL_FPoint normalized
+            {
+                get
+                {
+                    SDL_FPoint result = new SDL_FPoint(x, y);
+                    result.Normalize();
+                    return result;
+                }
+            }
+
+            public float magnitude
+            {
+                get
+                {
+                    return (float)Math.Sqrt(x * x + y * y);
+                }
+            }
+
+            public void Normalize()
+            {
+                float magnitude = this.magnitude;
+                if (magnitude > 1E-05f)
+                {
+                    this /= magnitude;
+                }
+                else
+                {
+                    this = zero;
+                }
+            }
+
+            public static float Dot(SDL_FPoint lhs, SDL_FPoint rhs)
+            {
+                return lhs.x * rhs.x + lhs.y * rhs.y;
+            }
+
+            public static float Angle(SDL_FPoint from, SDL_FPoint to)
+            {
+                float num = (float)Math.Sqrt(from.sqrMagnitude * to.sqrMagnitude);
+                float result;
+                if (num < 1E-15f)
+                {
+                    result = 0f;
+                }
+                else
+                {
+                    float f = MathExt.Clamp(Dot(from, to) / num, -1f, 1f);
+                    result = (float)Math.Acos(f) * 57.29578f;
+                }
+                return result;
+            }
+
+            public static float SignedAngle(SDL_FPoint from, SDL_FPoint to)
+            {
+                float num = Angle(from, to);
+                float num2 = (float)Math.Sign(from.x * to.y - from.y * to.x);
+                return num * num2;
+            }
+
+            public static float Distance(SDL_FPoint a, SDL_FPoint b)
+            {
+                return (a - b).magnitude;
+            }
+
+            public static readonly SDL_FPoint zero = new SDL_FPoint(0f, 0f);
+            public static readonly SDL_FPoint one = new SDL_FPoint(1f, 1f);
+
+            public static SDL_FPoint operator +(SDL_FPoint a, SDL_FPoint b) => new SDL_FPoint (a.x + b.x, a.y + b.y);
+            public static SDL_FPoint operator -(SDL_FPoint a, SDL_FPoint b) => new SDL_FPoint (a.x - b.x, a.y - b.y);
+            public static SDL_FPoint operator *(SDL_FPoint a, SDL_FPoint b) => new SDL_FPoint (a.x * b.x, a.y * b.y);
+            public static SDL_FPoint operator /(SDL_FPoint a, SDL_FPoint b) => new SDL_FPoint (a.x / b.x, a.y / b.y);
+            public static SDL_FPoint operator -(SDL_FPoint a) => new SDL_FPoint (-a.x, -a.y);
+            public static SDL_FPoint operator *(SDL_FPoint a, float d) => new SDL_FPoint (a.x * d, a.y * d);
+            public static SDL_FPoint operator *(float d, SDL_FPoint a) => new SDL_FPoint (a.x * d, a.y * d);
+            public static SDL_FPoint operator /(SDL_FPoint a, float d) => new SDL_FPoint (a.x / d, a.y / d);
+            public static bool operator ==(SDL_FPoint lhs, SDL_FPoint rhs) => (lhs - rhs).sqrMagnitude < 9.99999944E-11f;
+            public static bool operator !=(SDL_FPoint lhs, SDL_FPoint rhs) => !(lhs == rhs);
+
+            public override int GetHashCode() => x.GetHashCode() ^ y.GetHashCode() << 2;
+            public override bool Equals(object obj) => obj is SDL_FPoint && Equals((SDL_FPoint)obj);
+            public bool Equals(SDL_FPoint other) => x.Equals(other.x) && y.Equals(other.y);
+
+			public static SDL_FPoint Lerp(SDL_FPoint a, SDL_FPoint b, float t) => LerpUnclamped(a, b, t.Clamp(0f, 1f));
+            public static SDL_FPoint LerpUnclamped(SDL_FPoint a, SDL_FPoint b, float t) => new SDL_FPoint(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+
+            public static implicit operator SDL_FPoint(SDL_Point v) => new SDL_FPoint(v.x, v.y);
+            public static implicit operator SDL_Point(SDL_FPoint v) => new SDL_Point(v.x.AsInt(), v.y.AsInt());
+
+            public override string ToString()
+            {
+                return string.Format("{0}, {1}", x, y);
+            }
+
+			public static SDL_FPoint Parse(string str, IFormatProvider provider = null)
+			{
+                string[] parts = str.Split(',');
+                return new SDL_FPoint(float.Parse(parts[0], provider), float.Parse(parts[1], provider));
+			}
+        }
 
 		/* Only available in 2.0.10 or higher. */
 		[StructLayout(LayoutKind.Sequential)]
 		public struct SDL_FRect
 		{
 			public float x;
-			public float y;
-			public float w;
-			public float h;
-		}
+            public float y;
+            public float w;
+            public float h;
 
-		/* Only available in 2.0.4 or higher. */
+			public SDL_FPoint position
+			{
+				get => new SDL_FPoint(x, y);
+                set
+                {
+                    x = value.x;
+                    y = value.y;
+                }
+			}
+
+            public SDL_FPoint center
+			{
+				get => new SDL_FPoint(x + (w / 2f), y + (h / 2f));
+                set
+                {
+                    x = value.x - (w / 2f);
+                    y = value.y - (h / 2f);
+                }
+			}
+
+			public SDL_FPoint size
+            {
+                get => new SDL_FPoint(w, h);
+                set
+                {
+                    w = value.x;
+                    h = value.y;
+                }
+            }
+
+            public SDL_FRect(float x, float y, float w, float h)
+            {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+            }
+
+            public SDL_FRect(SDL_FPoint position, SDL_FPoint size)
+            {
+                w = size.x;
+                h = size.y;
+                x = position.x - (w / 2f);
+                y = position.y - (h / 2f);
+            }
+        }
+
 		public static SDL_bool SDL_PointInRect(ref SDL_Point p, ref SDL_Rect r)
 		{
 			return (	(p.x >= r.x) &&
@@ -4231,9 +4500,39 @@ namespace SDL2
 					(p.y < (r.y + r.h))	) ?
 				SDL_bool.SDL_TRUE :
 				SDL_bool.SDL_FALSE;
-		}
+        }
 
-		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static SDL_bool SDL_PointInRect(ref SDL_Point p, ref SDL_FRect r)
+        {
+            return ((p.x >= r.x) &&
+                    (p.x < (r.x + r.w)) &&
+                    (p.y >= r.y) &&
+                    (p.y < (r.y + r.h))) ?
+                SDL_bool.SDL_TRUE :
+                SDL_bool.SDL_FALSE;
+        }
+
+        public static SDL_bool SDL_PointInRect(ref SDL_FPoint p, ref SDL_Rect r)
+        {
+            return ((p.x >= r.x) &&
+                    (p.x < (r.x + r.w)) &&
+                    (p.y >= r.y) &&
+                    (p.y < (r.y + r.h))) ?
+                SDL_bool.SDL_TRUE :
+                SDL_bool.SDL_FALSE;
+        }
+
+        public static SDL_bool SDL_PointInRect(ref SDL_FPoint p, ref SDL_FRect r)
+        {
+            return ((p.x >= r.x) &&
+                    (p.x < (r.x + r.w)) &&
+                    (p.y >= r.y) &&
+                    (p.y < (r.y + r.h))) ?
+                SDL_bool.SDL_TRUE :
+                SDL_bool.SDL_FALSE;
+        }
+
+        [DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern SDL_bool SDL_EnclosePoints(
 			[In] SDL_Point[] points,
 			int count,

@@ -1,6 +1,12 @@
+# SDL2-CS
 This is SDL2#, a C# wrapper for SDL2.
 
 Project Website: https://github.com/flibitijibibo/SDL2-CS
+
+Modifications
+-------
+This library was modified specifically for OriNaca
+- SDL_Point, SDL_FPoint, SDL_Rect, SDL_FRect has a lot more functions and operations
 
 License
 -------
