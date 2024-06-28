@@ -28,8 +28,6 @@
 
 #region Using Statements
 using System;
-using System.Diagnostics;
-using System.Globalization;
 
 #if NET6_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
@@ -4071,11 +4069,19 @@ namespace SDL2
 
 			public SDL_Color(byte r, byte g, byte b, byte a)
 			{
-                this.r = r;
-                this.g = g;
-                this.b = b;
-                this.a = a;
-            }
+				this.r = r;
+				this.g = g;
+				this.b = b;
+				this.a = a;
+			}
+
+			public float sqrMagnitude => r * r + g * g + b * b + a * a;
+			public static bool operator ==(SDL_Color lhs, SDL_Color rhs) => lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;
+            public static bool operator !=(SDL_Color lhs, SDL_Color rhs) => !(lhs == rhs);
+
+            public override int GetHashCode() => r.GetHashCode() ^ g.GetHashCode() << 2 ^ b.GetHashCode() >> 2 ^ a.GetHashCode() >> 1;
+            public override bool Equals(object obj) => obj is SDL_FColor && Equals((SDL_FColor)obj);
+            public bool Equals(SDL_FColor other) => r.Equals(other.r) && g.Equals(other.g) && b.Equals(other.b) && a.Equals(other.a);
         }
 
         [StructLayout(LayoutKind.Sequential)]
