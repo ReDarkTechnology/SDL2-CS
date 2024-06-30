@@ -384,7 +384,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPStr)]
 				string text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font* */
@@ -392,12 +392,12 @@ namespace SDL2
 		private static extern unsafe IntPtr INTERNAL_TTF_RenderUTF8_Solid(
 			IntPtr font,
 			byte* text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 		public static unsafe IntPtr TTF_RenderUTF8_Solid(
 			IntPtr font,
 			string text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		) {
 			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Solid(
@@ -415,7 +415,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPWStr)]
 				string text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font*
@@ -426,7 +426,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPStr)]
 				string text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapLength
 		);
 
@@ -437,13 +437,13 @@ namespace SDL2
 		public static extern unsafe IntPtr INTERNAL_TTF_RenderUTF8_Solid_Wrapped(
 			IntPtr font,
 			byte* text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapLength
 		);
 		public static unsafe IntPtr TTF_RenderUTF8_Solid_Wrapped(
 			IntPtr font,
 			string text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapLength
 		) {
 			byte* utf8Text = SDL.Utf8EncodeHeap(text);
@@ -465,7 +465,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPWStr)]
 				string text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapLength
 		);
 
@@ -474,7 +474,7 @@ namespace SDL2
 		public static extern IntPtr TTF_RenderGlyph_Solid(
 			IntPtr font,
 			ushort ch,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font*
@@ -484,7 +484,7 @@ namespace SDL2
 		public static extern IntPtr TTF_RenderGlyph32_Solid(
 			IntPtr font,
 			uint ch,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font* */
@@ -493,8 +493,8 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPStr)]
 				string text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg
+			SDL.Color32 fg,
+			SDL.Color32 bg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font* */
@@ -502,14 +502,14 @@ namespace SDL2
 		private static extern unsafe IntPtr INTERNAL_TTF_RenderUTF8_Shaded(
 			IntPtr font,
 			byte* text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg
+			SDL.Color32 fg,
+			SDL.Color32 bg
 		);
 		public static unsafe IntPtr TTF_RenderUTF8_Shaded(
 			IntPtr font,
 			string text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg
+			SDL.Color32 fg,
+			SDL.Color32 bg
 		) {
 			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Shaded(
@@ -528,8 +528,8 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPWStr)]
 				string text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg
+			SDL.Color32 fg,
+			SDL.Color32 bg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font* */
@@ -538,8 +538,8 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPStr)]
 				string text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg,
+			SDL.Color32 fg,
+			SDL.Color32 bg,
 			uint wrapLength
 		);
 
@@ -550,15 +550,15 @@ namespace SDL2
 		public static extern unsafe IntPtr INTERNAL_TTF_RenderUTF8_Shaded_Wrapped(
 			IntPtr font,
 			byte* text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg,
+			SDL.Color32 fg,
+			SDL.Color32 bg,
 			uint wrapLength
 		);
 		public static unsafe IntPtr TTF_RenderUTF8_Shaded_Wrapped(
 			IntPtr font,
 			string text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg,
+			SDL.Color32 fg,
+			SDL.Color32 bg,
 			uint wrapLength
 		) {
 			byte* utf8Text = SDL.Utf8EncodeHeap(text);
@@ -579,8 +579,8 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPWStr)]
 				string text,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg,
+			SDL.Color32 fg,
+			SDL.Color32 bg,
 			uint wrapLength
 		);
 
@@ -589,8 +589,8 @@ namespace SDL2
 		public static extern IntPtr TTF_RenderGlyph_Shaded(
 			IntPtr font,
 			ushort ch,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg
+			SDL.Color32 fg,
+			SDL.Color32 bg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font*
@@ -600,8 +600,8 @@ namespace SDL2
 		public static extern IntPtr TTF_RenderGlyph32_Shaded(
 			IntPtr font,
 			uint ch,
-			SDL.SDL_Color fg,
-			SDL.SDL_Color bg
+			SDL.Color32 fg,
+			SDL.Color32 bg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font* */
@@ -610,7 +610,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPStr)]
 				string text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font* */
@@ -618,12 +618,12 @@ namespace SDL2
 		private static extern unsafe IntPtr INTERNAL_TTF_RenderUTF8_Blended(
 			IntPtr font,
 			byte* text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 		public static unsafe IntPtr TTF_RenderUTF8_Blended(
 			IntPtr font,
 			string text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		) {
 			byte* utf8Text = SDL.Utf8EncodeHeap(text);
 			IntPtr result = INTERNAL_TTF_RenderUTF8_Blended(
@@ -641,7 +641,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPWStr)]
 				string text,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font* */
@@ -650,7 +650,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPStr)]
 				string text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapped
 		);
 
@@ -659,13 +659,13 @@ namespace SDL2
 		private static extern unsafe IntPtr INTERNAL_TTF_RenderUTF8_Blended_Wrapped(
 			IntPtr font,
 			byte* text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapped
 		);
 		public static unsafe IntPtr TTF_RenderUTF8_Blended_Wrapped(
 			IntPtr font,
 			string text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapped
 		) {
 			byte* utf8Text = SDL.Utf8EncodeHeap(text);
@@ -685,7 +685,7 @@ namespace SDL2
 			IntPtr font,
 			[In()] [MarshalAs(UnmanagedType.LPWStr)]
 				string text,
-			SDL.SDL_Color fg,
+			SDL.Color32 fg,
 			uint wrapped
 		);
 
@@ -694,7 +694,7 @@ namespace SDL2
 		public static extern IntPtr TTF_RenderGlyph_Blended(
 			IntPtr font,
 			ushort ch,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* IntPtr refers to an SDL_Surface*, font to a TTF_Font*
@@ -704,7 +704,7 @@ namespace SDL2
 		public static extern IntPtr TTF_RenderGlyph32_Blended(
 			IntPtr font,
 			uint ch,
-			SDL.SDL_Color fg
+			SDL.Color32 fg
 		);
 
 		/* Only available in 2.0.16 or higher. */
